@@ -63,7 +63,7 @@ async function refreshDropboxToken() {
     const data = await response.json();
     if (!data.access_token) throw new Error("Failed to refresh Dropbox token");
 
-    console.log("✅ New Dropbox Token:", data.access_token);
+    console.log("✅ New Dropbox Token:");
 
     // Save to Firebase Database
     await set(ref(db, "server/dbox/token"), data.access_token);
