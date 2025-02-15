@@ -2,6 +2,7 @@
   "name": "dropbox-token-refresh",
   "version": "1.0.0",
   "description": "A service to refresh Dropbox token and notify via Telegram",
+  "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
