@@ -1,14 +1,13 @@
- import express from "express";
+import express from "express";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getDatabase, ref, set } from "firebase/database";
 import cron from "node-cron";
 import dotenv from "dotenv";
-import fetch from "node-fetch"; // ✅ Fix for fetch error in Node.js 16
 
 dotenv.config();
 
-// Firebase Config (Minimal)
+// Firebase Config
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
   databaseURL: process.env.FIREBASE_DATABASE_URL,
@@ -35,20 +34,20 @@ async function sendTelegramMessage(message) {
     });
     const data = await response.json();
     if (!data.ok) throw new Error("Failed to send Telegram message");
-    console.log("Telegram notification sent.");
+    console.log("✅ Telegram notification sent.");
   } catch (error) {
-    console.error("Telegram Error:", error.message);
+    console.error("❌ Telegram Error:", error.message);
   }
 }
 
 // Dropbox Token Refresh Function
 async function refreshDropboxToken() {
   try {
-    console.log("Signing in to Firebase...");
+    console.log("🔄 Signing in to Firebase...");
     const userCredential = await signInWithEmailAndPassword(auth, process.env.FIREBASE_EMAIL, process.env.FIREBASE_PASSWORD);
-    console.log("Signed in as:", userCredential.user.email);
+    console.log("✅ Signed in as:", userCredential.user.email);
 
-    console.log("Refreshing Dropbox token...");
+    console.log("🔄 Refreshing Dropbox token...");
     const params = new URLSearchParams();
     params.append("grant_type", "refresh_token");
     params.append("refresh_token", process.env.DROPBOX_REFRESH_TOKEN);
@@ -64,16 +63,16 @@ async function refreshDropboxToken() {
     const data = await response.json();
     if (!data.access_token) throw new Error("Failed to refresh Dropbox token");
 
-    console.log("New Dropbox Token:", data.access_token);
+    console.log("✅ New Dropbox Token:", data.access_token);
 
     // Save to Firebase Database
     await set(ref(db, "server/dbox/token"), data.access_token);
-    console.log("Dropbox token saved to Firebase.");
+    console.log("✅ Dropbox token saved to Firebase.");
 
     // Notify Telegram
     await sendTelegramMessage(`✅ Dropbox Token Updated Successfully: ${new Date().toLocaleString()}`);
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("❌ Error:", error.message);
     await sendTelegramMessage(`❌ Dropbox Token Update Failed: ${error.message}`);
   }
 }
@@ -85,11 +84,19 @@ cron.schedule("0 */3 * * *", () => {
 
 // Express Health Check Endpoint
 app.get("/", (req, res) => {
-  res.send("Dropbox Token Refresh Service Running...");
+  res.send("✅ Dropbox Token Refresh Service Running...");
 });
 
-app.listen(PORT, () => {
- await sendTelegramMessage(` Server running on port ${PORT}`);
-  console.log(`Server running on port ${PORT}`);
+// Start Server
+app.listen(PORT, async () => {
+  console.log(`✅ Server running on port ${PORT}`);
+  
+  try {
+    await sendTelegramMessage(`✅ Server started on port ${PORT}`);
+  } catch (error) {
+    console.error("❌ Failed to send Telegram message:", error.message);
+  }
 });
+
+// Initial Dropbox Token Refresh
 refreshDropboxToken();
