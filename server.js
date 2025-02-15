@@ -1,9 +1,10 @@
-import express from "express";
+ import express from "express";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getDatabase, ref, set } from "firebase/database";
 import cron from "node-cron";
 import dotenv from "dotenv";
+import fetch from "node-fetch"; // ✅ Fix for fetch error in Node.js 16
 
 dotenv.config();
 
